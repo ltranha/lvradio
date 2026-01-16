@@ -7,7 +7,9 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <!-- Main App -->
     <div id="app" class="app-container">
+        <!-- Header -->
         <header class="header">
             <h1 class="logo">🎵 Music</h1>
             <div class="header-actions">
@@ -15,17 +17,37 @@
             </div>
         </header>
 
+        <!-- Search Bar -->
         <div class="search-container">
             <input type="text" id="search-input" placeholder="Search tracks, albums, artists..." autocomplete="off">
             <span class="search-icon">🔍</span>
         </div>
 
+        <!-- View Tabs -->
         <div class="tabs">
             <button class="tab-btn active" data-view="tracks">Tracks</button>
             <button class="tab-btn" data-view="albums">Albums</button>
         </div>
 
+        <!-- Content Area -->
         <main class="main-content">
+            <!-- Tracks View -->
+            <div id="tracks-view" class="view active">
+                <div id="tracks-list" class="tracks-list"></div>
+                <div id="empty-state" class="empty-state">
+                    <p>No tracks found</p>
+                </div>
+            </div>
+
+            <!-- Albums View -->
+            <div id="albums-view" class="view">
+                <div id="albums-grid" class="albums-grid"></div>
+                <div id="album-detail" class="album-detail" style="display: none;">
+                    <button id="back-to-albums" class="back-btn">← Back to Albums</button>
+                    <div id="album-info"></div>
+                    <div id="album-tracks" class="tracks-list"></div>
+                </div>
+            </div>
         </main>
     </div>
 </body>
