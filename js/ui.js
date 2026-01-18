@@ -42,7 +42,7 @@ export function renderTracks() {
 
     // Load images asynchronously and add listeners
     container.querySelectorAll('.track-item').forEach(async (item) => {
-        // 1. Load Art
+        // Load Art
         const artFilename = item.dataset.art;
         if (artFilename) {
             const blobUrl = await fetchArtBlob(artFilename);
@@ -52,7 +52,7 @@ export function renderTracks() {
             }
         }
 
-        // 2. Add click listener (Logging only for now)
+        // Add click listener (Logging only for now)
         item.addEventListener('click', () => {
             const trackId = item.dataset.trackId;
             console.log('Track clicked:', trackId, '(Audio Player not connected yet)');
@@ -88,7 +88,7 @@ export function renderAlbums() {
 
     // Load images and add listeners
     container.querySelectorAll('.album-card').forEach(async (card) => {
-        // 1. Load Art
+        // Load Art
         const artFilename = card.dataset.art;
         if (artFilename) {
             const blobUrl = await fetchArtBlob(artFilename);
@@ -98,7 +98,7 @@ export function renderAlbums() {
             }
         }
 
-        // 2. Click Listener (TODO: Detail view to be implemented)
+        // Click Listener (TODO: Detail view to be implemented)
         card.addEventListener('click', () => {
             const albumId = card.dataset.albumId;
             showAlbumDetail(albumId);
@@ -182,4 +182,33 @@ function escapeHtml(text) {
     const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
+}
+
+/**
+ * Setup view tabs
+ */
+export function setupTabs() {
+    const tabButtons = document.querySelectorAll('.tab-btn');
+    const views = document.querySelectorAll('.view');
+
+    tabButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const viewName = btn.dataset.view;
+
+            // Update active tab
+            tabButtons.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+
+            // Update active view
+            views.forEach(v => v.classList.remove('active'));
+            document.getElementById(`${viewName}-view`).classList.add('active');
+
+            // Render content
+            if (viewName === 'albums') {
+                renderAlbums();
+            } else {
+                renderTracks();
+            }
+        });
+    });
 }

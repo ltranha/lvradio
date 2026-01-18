@@ -4,7 +4,7 @@
 
 import { fetchMetadata } from './api.js';
 import { state } from './state.js';
-import { renderTracks } from './ui.js';
+import { renderTracks, setupTabs } from './ui.js';
 
 // TODO:
 // We will add UI imports and Auth checks in later steps.
@@ -14,17 +14,15 @@ import { renderTracks } from './ui.js';
  * Initialize application
  */
 async function initApp() {
-    console.log('Starting App Initialization...');
     try {
-        // 1. Fetch metadata from API (or local db.json)
-        console.log('Fetching metadata...');
+        // Load metadata
         const metadata = await fetchMetadata();
-
-        // 2. Initialize State with the fetched data
         state.init(metadata);
 
-        // 3. Render initial view
-        console.log('Rendering tracks...');
+        // Initialize UI
+        setupTabs();
+
+        // Render initial view
         renderTracks();
 
         console.log('App initialized successfully');
