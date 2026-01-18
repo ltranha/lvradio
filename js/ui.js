@@ -55,7 +55,54 @@ export function renderTracks() {
         // 2. Add click listener (Logging only for now)
         item.addEventListener('click', () => {
             const trackId = item.dataset.trackId;
-            console.log('👆 Track clicked:', trackId, '(Audio Player not connected yet)');
+            console.log('Track clicked:', trackId, '(Audio Player not connected yet)');
+        });
+    });
+}
+
+/**
+ * Render albums grid
+ */
+export function renderAlbums() {
+    const container = document.getElementById('albums-grid');
+    // Guard clause if container is missing (e.g. if HTML structure changed)
+    if (!container) return;
+
+    const albums = Object.values(state.albums);
+
+    if (albums.length === 0) {
+        container.innerHTML = '<div class="empty-state"><p>No albums found</p></div>';
+        return;
+    }
+
+    // Generate HTML
+    container.innerHTML = Object.entries(state.albums).map(([albumId, album]) => {
+        return `
+            <div class="album-card" data-album-id="${albumId}" data-art="${album.art || ''}">
+                <img class="album-art" src="" alt="${album.name}" loading="lazy" onerror="this.style.display='none'">
+                <div class="album-name">${escapeHtml(album.name)}</div>
+                <div class="album-artist">${escapeHtml(album.artist || 'Unknown Artist')}</div>
+            </div>
+        `;
+    }).join('');
+
+    // Load images and add listeners
+    container.querySelectorAll('.album-card').forEach(async (card) => {
+        // 1. Load Art
+        const artFilename = card.dataset.art;
+        if (artFilename) {
+            const blobUrl = await fetchArtBlob(artFilename);
+            if (blobUrl) {
+                const img = card.querySelector('.album-art');
+                if (img) img.src = blobUrl;
+            }
+        }
+
+        // 2. Click Listener (TODO: Detail view to be implemented)
+        card.addEventListener('click', () => {
+            const albumId = card.dataset.albumId;
+            console.log('Album clicked:', albumId, '(Detail view not implemented yet)');
+            // showAlbumDetail(albumId);
         });
     });
 }
