@@ -101,10 +101,68 @@ export function renderAlbums() {
         // 2. Click Listener (TODO: Detail view to be implemented)
         card.addEventListener('click', () => {
             const albumId = card.dataset.albumId;
-            console.log('Album clicked:', albumId, '(Detail view not implemented yet)');
-            // showAlbumDetail(albumId);
+            showAlbumDetail(albumId);
         });
     });
+}
+
+/**
+ * Show album detail view
+ */
+async function showAlbumDetail(albumId) {
+    const album = state.albums[albumId];
+    if (!album) return;
+
+    // Get tracks specific to this album using the State helper
+    const tracks = state.getAlbumTracks(albumId);
+
+    // Fetch high-res art
+    const artUrl = album.art ? await fetchArtBlob(album.art) : null;
+
+    // UI Toggle: Hide grid, show detail
+    document.getElementById('albums-grid').style.display = 'none';
+    const detailView = document.getElementById('album-detail');
+    detailView.style.display = 'block';
+
+    // Render album header info
+    document.getElementById('album-info').innerHTML = `
+        <img class="album-detail-art" src="${artUrl || ''}" alt="${album.name}" onerror="this.style.display='none'">
+        <div class="album-detail-text">
+            <div class="album-detail-name">${escapeHtml(album.name)}</div>
+            <div class="album-detail-artist">${escapeHtml(album.artist || 'Unknown Artist')}</div>
+            ${album.year ? `<div class="album-detail-year">${album.year}</div>` : ''}
+        </div>
+    `;
+
+    // Render album tracks list
+    const tracksContainer = document.getElementById('album-tracks');
+    tracksContainer.innerHTML = tracks.map(track => {
+        const duration = formatDuration(track.duration);
+        // TODO: Playing state logic to be implemented
+
+        return `
+            <div class="track-item" data-track-id="${track.id}">
+                <div class="track-info">
+                    <div class="track-title">${escapeHtml(track.title)}</div>
+                </div>
+                <div class="track-duration">${duration}</div>
+            </div>
+        `;
+    }).join('');
+
+    // Add click listeners to tracks (Logging for now)
+    tracksContainer.querySelectorAll('.track-item').forEach(item => {
+        item.addEventListener('click', () => {
+            const trackId = item.dataset.trackId;
+            console.log('Album Track clicked:', trackId);
+        });
+    });
+
+    // Back button
+    document.getElementById('back-to-albums').addEventListener('click', () => {
+        detailView.style.display = 'none';
+        document.getElementById('albums-grid').style.display = 'grid';
+    }, { once: true });
 }
 
 /**
