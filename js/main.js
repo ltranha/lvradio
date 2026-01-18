@@ -4,6 +4,7 @@
 
 import { fetchMetadata } from './api.js';
 import { state } from './state.js';
+import { renderTracks } from './ui.js';
 
 // TODO:
 // We will add UI imports and Auth checks in later steps.
@@ -21,6 +22,10 @@ async function initApp() {
 
         // 2. Initialize State with the fetched data
         state.init(metadata);
+
+        // 3. Render initial view
+        console.log('Rendering tracks...');
+        renderTracks();
 
         console.log('App initialized successfully');
         console.log('Current State:', {

@@ -62,6 +62,8 @@ async function fetchWithAuth(path, options = {}) {
  * Fetch music library metadata
  */
 export async function fetchMetadata() {
+    // TODO: We are testing locally for now
+    return await (await fetch('./db.json')).json();
     const response = await fetchWithAuth('/db.json');
     return await response.json();
 }
