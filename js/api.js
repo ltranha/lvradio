@@ -93,6 +93,8 @@ export async function fetchArtBlob(filename) {
  * Fetch audio file
  */
 export async function fetchAudioBlob(filename) {
+    // TODO: We are testing locally for now
+    return await (await fetch(`./music/${filename}`)).blob();
     const response = await fetchWithAuth(`/music/${filename}`);
     return await response.blob();
 }
