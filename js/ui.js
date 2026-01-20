@@ -4,6 +4,16 @@
 
 import { fetchArtBlob } from './api.js';
 import { state } from './state.js';
+import AudioPlayer from './player.js';
+
+let player = null;
+
+/**
+ * Initialize UI
+ */
+export function initUI(audioElement) {
+    player = new AudioPlayer(audioElement);
+}
 
 /**
  * Render tracks list
@@ -25,8 +35,7 @@ export function renderTracks() {
     container.innerHTML = state.filteredTracks.map(track => {
         const album = state.albums[track.albumId] || {};
         const duration = formatDuration(track.duration);
-        // Placeholder for playing state (will be implemented later)
-        const isPlaying = false;
+        const isPlaying = state.currentTrack && state.currentTrack.id === track.id;
 
         return `
             <div class="track-item ${isPlaying ? 'playing' : ''}" data-track-id="${track.id}" data-art="${album.art || ''}">
@@ -52,12 +61,31 @@ export function renderTracks() {
             }
         }
 
-        // Add click listener (Logging only for now)
+        // Add click listener
         item.addEventListener('click', () => {
             const trackId = item.dataset.trackId;
-            console.log('Track clicked:', trackId, '(Audio Player not connected yet)');
+            playTrack(trackId);
         });
     });
+}
+
+/**
+ * Play a track
+ */
+async function playTrack(trackId) {
+    const success = state.setCurrentTrack(trackId);
+    if (!success) return;
+
+    renderTracks();
+
+    if (player) {
+        try {
+            await player.loadTrack(state.currentTrack);
+            await player.play();
+        } catch (error) {
+            console.error('Playback failed:', error);
+        }
+    }
 }
 
 /**
