@@ -13,6 +13,57 @@ let player = null;
  */
 export function initUI(audioElement) {
     player = new AudioPlayer(audioElement);
+    setupEventListeners();
+    setupPlayerControls();
+}
+
+/**
+ * Setup global event listeners
+ */
+function setupEventListeners() {
+    // Player events
+    window.addEventListener('player-play', () => {
+        updatePlayPauseButton(true);
+    });
+
+    window.addEventListener('player-pause', () => {
+        updatePlayPauseButton(false);
+    });
+
+    // State events
+    state.subscribe('metadata-loaded', renderTracks);
+    state.subscribe('tracks-filtered', renderTracks);
+    state.subscribe('track-changed', onTrackChanged);
+}
+
+/**
+ * Setup player control buttons
+ */
+function setupPlayerControls() {
+    const playPauseBtn = document.getElementById('play-pause-btn');
+    const prevBtn = document.getElementById('prev-btn');
+    const nextBtn = document.getElementById('next-btn');
+    const volumeSlider = document.getElementById('volume-slider');
+
+    playPauseBtn.addEventListener('click', async () => {
+        if (state.currentTrack) {
+            await player.togglePlayPause();
+        }
+    });
+
+    volumeSlider.addEventListener('input', (e) => {
+        const volume = parseFloat(e.target.value) / 100;
+        player.setVolume(volume);
+    });
+
+    // Placeholders for future steps (queue system)
+    prevBtn.addEventListener('click', () => {
+        console.log('Previous track clicked - not yet implemented');
+    });
+
+    nextBtn.addEventListener('click', () => {
+        console.log('Next track clicked - not yet implementated');
+    });
 }
 
 /**
@@ -35,7 +86,7 @@ export function renderTracks() {
     container.innerHTML = state.filteredTracks.map(track => {
         const album = state.albums[track.albumId] || {};
         const duration = formatDuration(track.duration);
-        const isPlaying = state.currentTrack && state.currentTrack.id === track.id;
+        const isPlaying = state.currentTrack?.id === track.id;
 
         return `
             <div class="track-item ${isPlaying ? 'playing' : ''}" data-track-id="${track.id}" data-art="${album.art || ''}">
@@ -49,7 +100,7 @@ export function renderTracks() {
         `;
     }).join('');
 
-    // Load images asynchronously and add listeners
+    // Load images asynchronously
     container.querySelectorAll('.track-item').forEach(async (item) => {
         // Load Art
         const artFilename = item.dataset.art;
@@ -70,32 +121,10 @@ export function renderTracks() {
 }
 
 /**
- * Play a track
- */
-async function playTrack(trackId) {
-    const success = state.setCurrentTrack(trackId);
-    if (!success) return;
-
-    renderTracks();
-
-    if (player) {
-        try {
-            await player.loadTrack(state.currentTrack);
-            await player.play();
-        } catch (error) {
-            console.error('Playback failed:', error);
-        }
-    }
-}
-
-/**
  * Render albums grid
  */
 export function renderAlbums() {
     const container = document.getElementById('albums-grid');
-    // Guard clause if container is missing (e.g. if HTML structure changed)
-    if (!container) return;
-
     const albums = Object.values(state.albums);
 
     if (albums.length === 0) {
@@ -114,9 +143,8 @@ export function renderAlbums() {
         `;
     }).join('');
 
-    // Load images and add listeners
+    // Load images asynchronously and add click listeners
     container.querySelectorAll('.album-card').forEach(async (card) => {
-        // Load Art
         const artFilename = card.dataset.art;
         if (artFilename) {
             const blobUrl = await fetchArtBlob(artFilename);
@@ -126,7 +154,6 @@ export function renderAlbums() {
             }
         }
 
-        // Click Listener (TODO: Detail view to be implemented)
         card.addEventListener('click', () => {
             const albumId = card.dataset.albumId;
             showAlbumDetail(albumId);
@@ -141,18 +168,15 @@ async function showAlbumDetail(albumId) {
     const album = state.albums[albumId];
     if (!album) return;
 
-    // Get tracks specific to this album using the State helper
     const tracks = state.getAlbumTracks(albumId);
-
-    // Fetch high-res art
     const artUrl = album.art ? await fetchArtBlob(album.art) : null;
 
-    // UI Toggle: Hide grid, show detail
+    // Hide albums grid, show detail
     document.getElementById('albums-grid').style.display = 'none';
     const detailView = document.getElementById('album-detail');
     detailView.style.display = 'block';
 
-    // Render album header info
+    // Render album info
     document.getElementById('album-info').innerHTML = `
         <img class="album-detail-art" src="${artUrl || ''}" alt="${album.name}" onerror="this.style.display='none'">
         <div class="album-detail-text">
@@ -162,14 +186,14 @@ async function showAlbumDetail(albumId) {
         </div>
     `;
 
-    // Render album tracks list
+    // Render album tracks
     const tracksContainer = document.getElementById('album-tracks');
     tracksContainer.innerHTML = tracks.map(track => {
         const duration = formatDuration(track.duration);
-        // TODO: Playing state logic to be implemented
+        const isPlaying = state.currentTrack?.id === track.id;
 
         return `
-            <div class="track-item" data-track-id="${track.id}">
+            <div class="track-item ${isPlaying ? 'playing' : ''}" data-track-id="${track.id}">
                 <div class="track-info">
                     <div class="track-title">${escapeHtml(track.title)}</div>
                 </div>
@@ -178,11 +202,11 @@ async function showAlbumDetail(albumId) {
         `;
     }).join('');
 
-    // Add click listeners to tracks (Logging for now)
+    // Add click listeners
     tracksContainer.querySelectorAll('.track-item').forEach(item => {
         item.addEventListener('click', () => {
             const trackId = item.dataset.trackId;
-            console.log('Album Track clicked:', trackId);
+            playTrack(trackId);
         });
     });
 
@@ -191,6 +215,49 @@ async function showAlbumDetail(albumId) {
         detailView.style.display = 'none';
         document.getElementById('albums-grid').style.display = 'grid';
     }, { once: true });
+}
+
+/**
+ * Play a track
+ */
+async function playTrack(trackId) {
+    state.setCurrentTrack(trackId);
+}
+
+/**
+ * Handle track change
+ */
+async function onTrackChanged() {
+    if (!state.currentTrack) return;
+
+    // Update playing state in lists
+    renderTracks();
+
+    // Update now playing bar
+    const album = state.albums[state.currentTrack.albumId] || {};
+    const artUrl = album.art ? await fetchArtBlob(album.art) : null;
+
+    // Ensure bar is visible
+    document.getElementById('now-playing').style.display = 'flex';
+    document.getElementById('now-playing-art-img').src = artUrl || '';
+    document.getElementById('now-playing-title').textContent = state.currentTrack.title;
+    document.getElementById('now-playing-artist').textContent = album.artist || 'Unknown Artist';
+
+    // Load and play track
+    try {
+        await player.loadTrack(state.currentTrack);
+        await player.play();
+    } catch (error) {
+        console.error('Error loading track:', error);
+    }
+}
+
+/**
+ * Update play/pause button
+ */
+function updatePlayPauseButton(isPlaying) {
+    const btn = document.getElementById('play-pause-btn');
+    btn.textContent = isPlaying ? '⏸' : '▶';
 }
 
 /**
@@ -204,7 +271,7 @@ function formatDuration(seconds) {
 }
 
 /**
- * Escape HTML to prevent XSS
+ * Escape HTML
  */
 function escapeHtml(text) {
     const div = document.createElement('div');
