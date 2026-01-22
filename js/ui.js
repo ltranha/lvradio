@@ -30,6 +30,14 @@ function setupEventListeners() {
         updatePlayPauseButton(false);
     });
 
+    window.addEventListener('player-timeupdate', (e) => {
+        updateProgressBar(e.detail.currentTime, e.detail.duration);
+    });
+
+    window.addEventListener('player-metadata', (e) => {
+        updateProgressBar(0, e.detail.duration);
+    });
+
     // State events
     state.subscribe('metadata-loaded', renderTracks);
     state.subscribe('tracks-filtered', renderTracks);
@@ -44,6 +52,7 @@ function setupPlayerControls() {
     const prevBtn = document.getElementById('prev-btn');
     const nextBtn = document.getElementById('next-btn');
     const volumeSlider = document.getElementById('volume-slider');
+    const progressSlider = document.getElementById('progress-slider');
 
     playPauseBtn.addEventListener('click', async () => {
         if (state.currentTrack) {
@@ -54,6 +63,15 @@ function setupPlayerControls() {
     volumeSlider.addEventListener('input', (e) => {
         const volume = parseFloat(e.target.value) / 100;
         player.setVolume(volume);
+    });
+
+    progressSlider.addEventListener('input', (e) => {
+        const percent = parseFloat(e.target.value);
+        const duration = player.getDuration();
+        if (duration) {
+            const seekTime = (percent / 100) * duration;
+            player.seekTo(seekTime);
+        }
     });
 
     // Placeholders for future steps (queue system)
@@ -250,6 +268,19 @@ async function onTrackChanged() {
     } catch (error) {
         console.error('Error loading track:', error);
     }
+}
+
+/**
+ * Update progress bar
+ */
+function updateProgressBar(currentTime, duration) {
+    if (!duration) return;
+
+    const percent = (currentTime / duration) * 100;
+    document.getElementById('progress-fill').style.width = `${percent}%`;
+    document.getElementById('progress-slider').value = percent;
+    document.getElementById('current-time').textContent = player.formatTime(currentTime);
+    document.getElementById('total-time').textContent = player.formatTime(duration);
 }
 
 /**
