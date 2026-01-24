@@ -2,7 +2,8 @@
  * API Layer - Handles all requests to Cloudflare Worker
  */
 
-const WORKER_URL = 'https://music-proxy.your-username.workers.dev'; // Update with your Worker URL
+// TODO: Update with your Worker URL
+const WORKER_URL = 'https://music-proxy.ltranha.workers.dev';
 
 /**
  * Get auth token from localStorage or sessionStorage
@@ -62,8 +63,6 @@ async function fetchWithAuth(path, options = {}) {
  * Fetch music library metadata
  */
 export async function fetchMetadata() {
-    // TODO: We are testing locally for now
-    return await (await fetch('./db.json')).json();
     const response = await fetchWithAuth('/db.json');
     return await response.json();
 }
@@ -75,16 +74,13 @@ export async function fetchArtBlob(filename) {
     if (!filename) {
         return null;
     }
-    const token = getAuthToken();
-    if (!token) {
-        return null;
-    }
+    const safeFilename = encodeURIComponent(filename);
     try {
-        const response = await fetchWithAuth(`/art/${filename}`);
+        const response = await fetchWithAuth(`/art/${safeFilename}`);
         const blob = await response.blob();
         return URL.createObjectURL(blob);
     } catch (error) {
-        console.error('Error loading art:', error);
+        console.error(`Error loading art (${filename}):`, error);
         return null;
     }
 }
@@ -93,9 +89,11 @@ export async function fetchArtBlob(filename) {
  * Fetch audio file
  */
 export async function fetchAudioBlob(filename) {
-    // TODO: We are testing locally for now
-    return await (await fetch(`./music/${filename}`)).blob();
-    const response = await fetchWithAuth(`/music/${filename}`);
+    if (!filename) {
+        return null;
+    }
+    const safeFilename = encodeURIComponent(filename);
+    const response = await fetchWithAuth(`/music/${safeFilename}`);
     return await response.blob();
 }
 

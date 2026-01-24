@@ -1,0 +1,9 @@
+name = "music-proxy"
+main = "index.js"
+compatibility_date = "2024-01-01"
+
+[vars]
+# TODO: Update these with your Backblaze B2 info
+B2_ENDPOINT = "s3.us-east-005.backblazeb2.com"  # use your Endpoint from the Backblaze B2 storage setup.
+B2_BUCKET_NAME = "lv-music-storage"             # use your Bucket name.
+B2_REGION = "us-east-005"                       # usually the middle part of the endpoint

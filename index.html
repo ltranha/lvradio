@@ -7,8 +7,25 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <!-- Auth Modal -->
+    <div id="auth-modal" class="modal">
+        <div class="modal-content">
+            <h2>Enter Access Token</h2>
+            <p class="modal-description">Enter your secret token to access your music library.</p>
+            <input type="password" id="auth-token-input" placeholder="Secret token..." autofocus>
+            <div class="modal-actions">
+                <label class="checkbox-label">
+                    <input type="checkbox" id="remember-token" checked>
+                    <span>Remember me</span>
+                </label>
+                <button id="auth-submit" class="btn-primary">Connect</button>
+            </div>
+            <div id="auth-error" class="error-message"></div>
+        </div>
+    </div>
+
     <!-- Main App -->
-    <div id="app" class="app-container">
+    <div id="app" class="app-container" style="display: none;">
         <!-- Header -->
         <header class="header">
             <h1 class="logo">🎵 Music</h1>
@@ -51,7 +68,7 @@
         </main>
 
         <!-- Now Playing Bar -->
-        <div id="now-playing" class="now-playing">
+        <div id="now-playing" class="now-playing" style="display: none;">
             <div class="now-playing-art">
                 <img id="now-playing-art-img" src="" alt="Album art">
             </div>
