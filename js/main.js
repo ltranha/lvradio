@@ -31,25 +31,17 @@ function showAuthModal() {
 
     // Submit handler
     const handleSubmit = async () => {
-        const token = input.value.trim();
-        if (!token) {
+        const tokenValue = input.value.trim();
+        if (!tokenValue) {
             showError('Please enter a token');
             return;
         }
 
         // Test token by fetching metadata
         try {
-            // Temporarily set token to test
-            setAuthToken(token);
+            // Store valid token based on checkbox
+            setAuthToken(tokenValue, rememberCheckbox.checked);
             await fetchMetadata();
-
-            // Token is valid
-            if (rememberCheckbox.checked) {
-                setAuthToken(token);
-            } else {
-                // Store in sessionStorage for this session only
-                sessionStorage.setItem('music_auth_token', token);
-            }
 
             modal.style.display = 'none';
             initApp();
@@ -109,6 +101,7 @@ async function initApp() {
         console.log('App initialized successfully');
     } catch (error) {
         console.error('Failed to initialize app:', error);
-        alert('Failed to load music library. Please check your connection and token.');
+        clearAuthToken();
+        showAuthModal();
     }
 }

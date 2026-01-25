@@ -13,10 +13,14 @@ export function getAuthToken() {
 }
 
 /**
- * Set auth token in localStorage
+ * Set auth token in storage
  */
-export function setAuthToken(token) {
-    localStorage.setItem('music_auth_token', token);
+export function setAuthToken(token, persist = false) {
+    if (persist) {
+        localStorage.setItem('music_auth_token', token);
+    } else {
+        sessionStorage.setItem('music_auth_token', token);
+    }
 }
 
 /**
