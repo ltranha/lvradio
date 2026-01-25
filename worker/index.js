@@ -4,13 +4,12 @@ export default {
   async fetch(request, env) {
     // 1. Setup CORS so your website can talk to this worker
     const corsHeaders = {
-      'Access-Control-Allow-Origin': '*', // Change this to your specific URL later for security
-      'Access-Control-Allow-Methods': 'GET, OPTIONS',
-      'Access-Control-Allow-Headers': 'X-Auth-Token, Range',
+      'Access-Control-Allow-Origin': 'https://ltranha.github.io/lvradio/', // TODO: Change this to your specific URL
+      'Access-Control-Allow-Methods': 'GET, PUT, OPTIONS',
+      'Access-Control-Allow-Headers': 'X-Auth-Token, Range, Content-Type',
     };
 
     if (request.method === 'OPTIONS') return new Response(null, { headers: corsHeaders });
-    if (request.method !== 'GET') return new Response('Method not allowed', { status: 405, headers: corsHeaders });
 
     // 2. Security Check (The Gatekeeper)
     const authToken = request.headers.get('X-Auth-Token');
@@ -29,8 +28,18 @@ export default {
     // 4. Route the request
     const url = new URL(request.url);
     const path = url.pathname;
-    let key = '';
 
+    // Handle PUT for db.json upload
+    if (request.method === 'PUT' && (path === '/db.json' || path === '/db')) {
+      return handleDbUpload(request, env, s3, corsHeaders);
+    }
+
+    // Only allow GET for other routes
+    if (request.method !== 'GET') {
+      return new Response('Method not allowed', { status: 405, headers: corsHeaders });
+    }
+
+    let key = '';
     if (path === '/db.json' || path === '/db') key = 'db.json';
     else if (path.startsWith('/music/')) key = `music/${path.replace('/music/', '')}`;
     else if (path.startsWith('/art/')) key = `art/${path.replace('/art/', '')}`;
@@ -60,3 +69,53 @@ export default {
     }
   },
 };
+
+/**
+ * Handle db.json upload
+ */
+async function handleDbUpload(request, env, s3, corsHeaders) {
+  try {
+    const body = await request.text();
+
+    // Validate JSON
+    const parsed = JSON.parse(body);
+    if (!parsed.tracks || !parsed.albums) {
+      return new Response(JSON.stringify({ error: 'Invalid db.json: missing tracks or albums' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // Upload to Backblaze
+    const b2Url = `https://${env.B2_ENDPOINT}/${env.B2_BUCKET_NAME}/db.json`;
+    const response = await s3.fetch(b2Url, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: body,
+    });
+
+    if (!response.ok) {
+      return new Response(JSON.stringify({ error: 'Failed to upload to storage' }), {
+        status: 502,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    return new Response(JSON.stringify({ success: true, message: 'db.json updated successfully' }), {
+      status: 200,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+
+  } catch (e) {
+    if (e instanceof SyntaxError) {
+      return new Response(JSON.stringify({ error: 'Invalid JSON format' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+    return new Response(JSON.stringify({ error: 'Upload failed: ' + e.message }), {
+      status: 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+}

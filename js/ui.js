@@ -2,7 +2,7 @@
  * UI Rendering and DOM Manipulation
  */
 
-import { fetchArtBlob } from './api.js';
+import { clearAuthToken, fetchMetadata, uploadMetadata, fetchArtBlob } from './api.js';
 import { state } from './state.js';
 import AudioPlayer from './player.js';
 
@@ -82,6 +82,179 @@ function setupPlayerControls() {
     nextBtn.addEventListener('click', () => {
         console.log('Next track clicked - not yet implementated');
     });
+}
+
+/**
+ * Setup view tabs
+ */
+export function setupTabs() {
+    const tabButtons = document.querySelectorAll('.tab-btn');
+    const views = document.querySelectorAll('.view');
+
+    tabButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const viewName = btn.dataset.view;
+
+            // Update active tab
+            tabButtons.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+
+            // Update active view
+            views.forEach(v => v.classList.remove('active'));
+            document.getElementById(`${viewName}-view`).classList.add('active');
+
+            // Render content
+            if (viewName === 'albums') {
+                renderAlbums();
+            } else {
+                renderTracks();
+            }
+        });
+    });
+}
+
+/**
+ * Setup settings modal
+ */
+export function setupSettings() {
+    const settingsBtn = document.getElementById('settings-btn');
+    const settingsModal = document.getElementById('settings-modal');
+    const closeBtn = document.getElementById('settings-close');
+    const logoutBtn = document.getElementById('logout-btn');
+    const uploadInput = document.getElementById('db-upload-input');
+    const uploadBtn = document.getElementById('db-upload-btn');
+    const uploadStatus = document.getElementById('upload-status');
+
+    // Open settings
+    settingsBtn.addEventListener('click', () => {
+        settingsModal.style.display = 'flex';
+    });
+
+    // Close settings
+    closeBtn.addEventListener('click', () => {
+        settingsModal.style.display = 'none';
+    });
+
+    // Click outside to close
+    settingsModal.addEventListener('click', (e) => {
+        if (e.target === settingsModal) {
+            settingsModal.style.display = 'none';
+        }
+    });
+
+    // Logout
+    logoutBtn.addEventListener('click', () => {
+        clearAuthToken();
+        location.reload();
+    });
+
+    // DB Upload - click handler
+    async function handleUpload(file) {
+        if (!file) {
+            showUploadStatus('Please select a file', 'error');
+            return;
+        }
+
+        try {
+            const text = await file.text();
+            const json = JSON.parse(text);
+
+            // Basic validation
+            if (!json.tracks || !json.albums) {
+                showUploadStatus('Invalid db.json: missing tracks or albums', 'error');
+                return;
+            }
+
+            showUploadStatus('Uploading...', 'info');
+            await uploadMetadata(json);
+            showUploadStatus('Upload successful! Refreshing...', 'success');
+
+            // Refresh library
+            setTimeout(async () => {
+                const metadata = await fetchMetadata();
+                state.init(metadata);
+                renderCurrentView();
+                settingsModal.style.display = 'none';
+                uploadInput.value = '';
+            }, 1000);
+
+        } catch (error) {
+            console.error('Upload error:', error);
+            if (error instanceof SyntaxError) {
+                showUploadStatus('Invalid JSON format', 'error');
+            } else {
+                showUploadStatus('Upload failed: ' + error.message, 'error');
+            }
+        }
+    }
+
+    uploadBtn.addEventListener('click', () => {
+        handleUpload(uploadInput.files[0]);
+    });
+
+    // Drag and drop support for upload area
+    const uploadArea = document.querySelector('.upload-area');
+
+    uploadArea.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        uploadArea.classList.add('drag-over');
+    });
+
+    uploadArea.addEventListener('dragleave', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        uploadArea.classList.remove('drag-over');
+    });
+
+    uploadArea.addEventListener('drop', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        uploadArea.classList.remove('drag-over');
+
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+            const file = files[0];
+            if (file.name.endsWith('.json')) {
+                const dataTransfer = new DataTransfer();
+                dataTransfer.items.add(file);
+                uploadInput.files = dataTransfer.files;
+            } else {
+                showUploadStatus('Please drop a .json file', 'error');
+            }
+        }
+    });
+
+    function showUploadStatus(message, type) {
+        uploadStatus.textContent = message;
+        uploadStatus.className = 'upload-status ' + type;
+        uploadStatus.style.display = 'block';
+        if (type !== 'info') {
+            setTimeout(() => {
+                uploadStatus.style.display = 'none';
+            }, 5000);
+        }
+    }
+}
+
+/**
+ * Re-render the currently active view
+ */
+export function renderCurrentView() {
+    const activeTab = document.querySelector('.tab-btn.active');
+    if (!activeTab) return;
+
+    const viewName = activeTab.dataset.view;
+    if (viewName === 'tracks') {
+        renderTracks();
+    } else if (viewName === 'albums') {
+        const albumDetail = document.getElementById('album-detail');
+        if (albumDetail && albumDetail.style.display !== 'none') {
+            // Stay in detail view, just refresh
+        } else {
+            renderAlbums();
+        }
+    }
 }
 
 /**
@@ -308,33 +481,4 @@ function escapeHtml(text) {
     const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
-}
-
-/**
- * Setup view tabs
- */
-export function setupTabs() {
-    const tabButtons = document.querySelectorAll('.tab-btn');
-    const views = document.querySelectorAll('.view');
-
-    tabButtons.forEach(btn => {
-        btn.addEventListener('click', () => {
-            const viewName = btn.dataset.view;
-
-            // Update active tab
-            tabButtons.forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-
-            // Update active view
-            views.forEach(v => v.classList.remove('active'));
-            document.getElementById(`${viewName}-view`).classList.add('active');
-
-            // Render content
-            if (viewName === 'albums') {
-                renderAlbums();
-            } else {
-                renderTracks();
-            }
-        });
-    });
 }

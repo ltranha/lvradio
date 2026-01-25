@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Music Player</title>
+    <title>LV Radio - Private Music Streamer</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -24,11 +24,35 @@
         </div>
     </div>
 
+    <!-- Settings Modal -->
+    <div id="settings-modal" class="modal" style="display: none;">
+        <div class="modal-content settings-content">
+            <div class="settings-header">
+                <h2>Settings</h2>
+                <button id="settings-close" class="close-btn">&times;</button>
+            </div>
+
+            <div class="settings-section">
+                <h3>Library Management</h3>
+                <p class="setting-description">Upload a new db.json file to update your music library metadata.</p>
+                <div class="upload-area">
+                    <input type="file" id="db-upload-input" accept=".json">
+                    <button id="db-upload-btn" class="btn-secondary">Upload db.json</button>
+                </div>
+                <div id="upload-status" class="upload-status" style="display: none;"></div>
+            </div>
+
+            <div class="settings-footer">
+                <button id="logout-btn" class="btn-danger">Disconnect</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Main App -->
     <div id="app" class="app-container" style="display: none;">
         <!-- Header -->
         <header class="header">
-            <h1 class="logo">🎵 Music</h1>
+            <h1 class="logo">🎵 LV Radio</h1>
             <div class="header-actions">
                 <button id="settings-btn" class="icon-btn" title="Settings">⚙️</button>
             </div>

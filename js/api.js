@@ -107,3 +107,33 @@ export async function fetchAudioBlob(filename) {
 export function revokeAudioUrl(url) {
     URL.revokeObjectURL(url);
 }
+
+/**
+ * Upload new db.json metadata
+ */
+export async function uploadMetadata(metadata) {
+    const token = getAuthToken();
+    if (!token) {
+        throw new Error('No auth token');
+    }
+
+    const response = await fetch(`${WORKER_URL}/db.json`, {
+        method: 'PUT',
+        headers: {
+            'X-Auth-Token': token,
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(metadata),
+    });
+
+    if (response.status === 401) {
+        clearAuthToken();
+        throw new Error('Unauthorized - invalid token');
+    }
+
+    if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+
+    return await response.json();
+}

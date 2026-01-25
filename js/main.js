@@ -4,7 +4,7 @@
 
 import { setAuthToken, getAuthToken, clearAuthToken, fetchMetadata } from './api.js';
 import { state } from './state.js';
-import { initUI, setupTabs, renderTracks } from './ui.js';
+import { initUI, setupTabs, setupSettings, renderTracks } from './ui.js';
 
 // Check if auth token exists
 const token = getAuthToken();
@@ -92,11 +92,7 @@ async function initApp() {
         renderTracks();
 
         // Setup settings button
-        document.getElementById('settings-btn').addEventListener('click', () => {
-            // Clear token and show auth modal again
-            clearAuthToken();
-            location.reload();
-        });
+        setupSettings();
 
         console.log('App initialized successfully');
     } catch (error) {
