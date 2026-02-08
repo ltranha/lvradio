@@ -2,7 +2,7 @@
  * UI Rendering and DOM Manipulation
  */
 
-import { clearAuthToken, fetchMetadata, uploadMetadata, fetchArtBlob } from './api.js';
+import { getArtUrl, clearAuthToken, fetchMetadata, uploadMetadata } from './api.js';
 import { state } from './state.js';
 import AudioPlayer from './player.js';
 
@@ -296,10 +296,10 @@ export function renderTracks() {
         // Load Art
         const artFilename = item.dataset.art;
         if (artFilename) {
-            const blobUrl = await fetchArtBlob(artFilename);
-            if (blobUrl) {
+            const artUrl = await getArtUrl(artFilename);
+            if (artUrl) {
                 const img = item.querySelector('.track-art');
-                if (img) img.src = blobUrl;
+                if (img) img.src = artUrl;
             }
         }
 
@@ -338,10 +338,10 @@ export function renderAlbums() {
     container.querySelectorAll('.album-card').forEach(async (card) => {
         const artFilename = card.dataset.art;
         if (artFilename) {
-            const blobUrl = await fetchArtBlob(artFilename);
-            if (blobUrl) {
+            const artUrl = await getArtUrl(artFilename);
+            if (artUrl) {
                 const img = card.querySelector('.album-art');
-                if (img) img.src = blobUrl;
+                if (img) img.src = artUrl;
             }
         }
 
@@ -360,7 +360,7 @@ async function showAlbumDetail(albumId) {
     if (!album) return;
 
     const tracks = state.getAlbumTracks(albumId);
-    const artUrl = album.art ? await fetchArtBlob(album.art) : null;
+    const artUrl = album.art ? await getArtUrl(album.art) : null;
 
     // Hide albums grid, show detail
     document.getElementById('albums-grid').style.display = 'none';
@@ -426,7 +426,7 @@ async function onTrackChanged() {
 
     // Update now playing bar
     const album = state.albums[state.currentTrack.albumId] || {};
-    const artUrl = album.art ? await fetchArtBlob(album.art) : null;
+    const artUrl = album.art ? await getArtUrl(album.art) : null;
 
     // Ensure bar is visible
     document.getElementById('now-playing').style.display = 'flex';

@@ -1,19 +1,20 @@
 /**
  * Main Application Entry Point
+ *
+ * Responsibilities:
+ * - Authentication flow (token validation, modal)
+ * - Application bootstrapping (init sequence)
  */
 
-import { setAuthToken, getAuthToken, clearAuthToken, fetchMetadata } from './api.js';
+import { getAuthToken, setAuthToken, clearAuthToken, fetchMetadata } from './api.js';
 import { state } from './state.js';
-import { initUI, setupTabs, setupSettings, renderTracks } from './ui.js';
+import { initUI, setupTabs, setupSettings } from './ui.js';
 
-// Check if auth token exists
+// Application startup
 const token = getAuthToken();
-
 if (!token) {
-    // Show auth modal
     showAuthModal();
 } else {
-    // Initialize app
     initApp();
 }
 
@@ -28,6 +29,8 @@ function showAuthModal() {
     const errorDiv = document.getElementById('auth-error');
 
     modal.style.display = 'flex';
+    input.value = '';
+    input.focus();
 
     // Submit handler
     const handleSubmit = async () => {
@@ -37,14 +40,17 @@ function showAuthModal() {
             return;
         }
 
-        // Test token by fetching metadata
         try {
             // Store valid token based on checkbox
             setAuthToken(tokenValue, rememberCheckbox.checked);
-            await fetchMetadata();
+
+            // Fetch metadata to validate token and cache it
+            const metadata = await fetchMetadata();
 
             modal.style.display = 'none';
-            initApp();
+
+            // Pass the already-fetched metadata to avoid duplicate fetch
+            initApp(metadata);
         } catch (error) {
             console.error('Auth error:', error);
             showError('Invalid token. Please check and try again.');
@@ -70,8 +76,9 @@ function showAuthModal() {
 
 /**
  * Initialize application
+ * @param {Object} [preloadedMetadata] - Pre-fetched metadata to avoid duplicate fetch
  */
-async function initApp() {
+async function initApp(preloadedMetadata = null) {
     try {
         // Show app container
         document.getElementById('app').style.display = 'flex';
@@ -84,14 +91,13 @@ async function initApp() {
         initUI(audioElement);
         setupTabs();
 
-        // Load metadata
-        const metadata = await fetchMetadata();
+        // Load metadata (uses cache if available, or use preloaded)
+        const metadata = preloadedMetadata || await fetchMetadata();
+
+        // Initialize state
         state.init(metadata);
 
-        // Render initial view
-        renderTracks();
-
-        // Setup settings button
+        // Setup UI components
         setupSettings();
 
         console.log('App initialized successfully');

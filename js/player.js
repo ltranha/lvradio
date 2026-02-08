@@ -2,7 +2,7 @@
  * Audio Player Controller
  */
 
-import { fetchAudioBlob, revokeAudioUrl } from './api.js';
+import { getAudioStreamUrl, revokeAudioUrl } from './api.js';
 import { state } from './state.js';
 
 class AudioPlayer {
@@ -56,12 +56,9 @@ class AudioPlayer {
             // Pause current playback
             this.audio.pause();
 
-            // Fetch audio blob
-            const blob = await fetchAudioBlob(track.fileName);
-
-            // Create Object URL (using native URL.createObjectURL or helper if available)
-            this.currentBlobUrl = URL.createObjectURL(blob);
-            this.audio.src = this.currentBlobUrl;
+            // Get streaming URL
+            const streamUrl = getAudioStreamUrl(track.fileName);
+            this.audio.src = streamUrl;
 
             // Load the audio
             await this.audio.load();
