@@ -8,7 +8,7 @@
 
 import { getAuthToken, setAuthToken, clearAuthToken, fetchMetadata } from './api.js';
 import { state } from './state.js';
-import { initUI, setupTabs, setupSettings } from './ui.js';
+import { initUI, setupTabs, setupHeaderControls, setupSettings } from './ui.js';
 
 // Application startup
 const token = getAuthToken();
@@ -98,6 +98,7 @@ async function initApp(preloadedMetadata = null) {
         state.init(metadata);
 
         // Setup UI components
+        setupHeaderControls();
         setupSettings();
 
         console.log('App initialized successfully');

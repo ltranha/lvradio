@@ -33,6 +33,25 @@
             </div>
 
             <div class="settings-section">
+                <h3>Data Usage</h3>
+                <label class="toggle-label">
+                    <input type="checkbox" id="economy-mode-toggle">
+                    <span class="toggle-slider"></span>
+                    <span class="toggle-text">Economy Mode</span>
+                </label>
+                <p class="setting-description">Skip loading album art in lists to save bandwidth. Art still shows in the player bar and album detail.</p>
+            </div>
+
+            <div class="settings-section">
+                <h3>Cache Management</h3>
+                <p class="setting-description">Clear cached album art to free memory or force reload from server.</p>
+                <div class="cache-controls">
+                    <button id="clear-cache-btn" class="btn-secondary">Clear Art Cache</button>
+                    <span id="cache-status" class="cache-status">Cached: 0 items</span>
+                </div>
+            </div>
+
+            <div class="settings-section">
                 <h3>Library Management</h3>
                 <p class="setting-description">Upload a new db.json file to update your music library metadata.</p>
                 <div class="upload-area">
@@ -52,8 +71,12 @@
     <div id="app" class="app-container" style="display: none;">
         <!-- Header -->
         <header class="header">
-            <h1 class="logo">🎵 LV Radio</h1>
+            <h1 class="logo" title="Go to home">🎵 LV Radio</h1>
             <div class="header-actions">
+                <label class="economy-toggle-header" title="Economy Mode - Skip loading album art">
+                    <input type="checkbox" id="economy-toggle-header">
+                    <span class="toggle-icon">🌿</span>
+                </label>
                 <button id="settings-btn" class="icon-btn" title="Settings">⚙️</button>
             </div>
         </header>

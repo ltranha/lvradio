@@ -1,5 +1,10 @@
 /**
  * Application State Management
+ *
+ * Features:
+ * - Tracks, albums data management
+ * - Settings persistence (economy mode, volume)
+ * - Pub/Sub pattern for UI updates
  */
 
 class AppState {
@@ -15,6 +20,39 @@ class AppState {
         this.isShuffled = false;
         this.originalQueue = [];
         this.listeners = new Map();
+        this.settings = this.loadSettings();
+    }
+
+    /**
+     * Load settings from localStorage
+     */
+    loadSettings() {
+        const defaults = {
+            economyMode: true,
+            volume: 100,
+        };
+        try {
+            const saved = localStorage.getItem('music_settings');
+            return saved ? { ...defaults, ...JSON.parse(saved) } : defaults;
+        } catch {
+            return defaults;
+        }
+    }
+
+    /**
+     * Save settings to localStorage
+     */
+    saveSettings() {
+        localStorage.setItem('music_settings', JSON.stringify(this.settings));
+    }
+
+    /**
+     * Update a setting
+     */
+    setSetting(key, value) {
+        this.settings[key] = value;
+        this.saveSettings();
+        this.notify('settings-changed', { key, value });
     }
 
     /**

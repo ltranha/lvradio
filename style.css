@@ -731,3 +731,143 @@ body {
 .volume-slider:hover::-webkit-slider-thumb {
     background: #fff;
 }
+
+/* Header Actions */
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* Economy Toggle in Header */
+.economy-toggle-header {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 4px;
+    transition: background 0.2s;
+}
+
+.economy-toggle-header:hover {
+    background: var(--bg-tertiary);
+}
+
+.economy-toggle-header input {
+    display: none;
+}
+
+.economy-toggle-header .toggle-icon {
+    font-size: 1.25rem;
+    opacity: 0.5;
+    transition: opacity 0.2s;
+}
+
+.economy-toggle-header input:checked + .toggle-icon {
+    opacity: 1;
+}
+
+/* Toggle Switch Styles */
+.toggle-label {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    cursor: pointer;
+    margin-bottom: 0.5rem;
+}
+
+.toggle-label input {
+    display: none;
+}
+
+.toggle-slider {
+    position: relative;
+    width: 44px;
+    height: 24px;
+    background: var(--bg-tertiary);
+    border-radius: 12px;
+    transition: background 0.2s;
+}
+
+.toggle-slider::before {
+    content: '';
+    position: absolute;
+    width: 18px;
+    height: 18px;
+    background: var(--text-secondary);
+    border-radius: 50%;
+    top: 3px;
+    left: 3px;
+    transition: transform 0.2s, background 0.2s;
+}
+
+.toggle-label input:checked + .toggle-slider {
+    background: var(--accent);
+}
+
+.toggle-label input:checked + .toggle-slider::before {
+    transform: translateX(20px);
+    background: white;
+}
+
+.toggle-text {
+    font-weight: 500;
+}
+
+/* Cache Controls */
+.cache-controls {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 0.75rem;
+}
+
+.cache-status {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+/* Track Meta (Artist + Album) */
+.track-meta {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+.track-meta span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.track-separator {
+    color: var(--text-secondary);
+    opacity: 0.5;
+    flex-shrink: 0;
+}
+
+.track-album {
+    opacity: 0.7;
+}
+
+/* Album Art Placeholder (Economy Mode) */
+.album-art-placeholder {
+    width: 100%;
+    aspect-ratio: 1;
+    border-radius: 8px;
+    background: var(--bg-tertiary);
+    margin-bottom: 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3rem;
+    opacity: 0.5;
+}
+
+.album-art-placeholder.small {
+    font-size: 2rem;
+    border-radius: 6px;
+}
