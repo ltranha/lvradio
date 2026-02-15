@@ -47,6 +47,14 @@ body {
     max-width: 400px;
     width: 90%;
     box-shadow: 0 8px 32px var(--shadow);
+    max-height: 85vh;
+    overflow-y: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.modal-content::-webkit-scrollbar {
+    display: none;
 }
 
 .modal-content h2 {
@@ -125,7 +133,7 @@ body {
 
 /* Settings Modal */
 .settings-content {
-    max-width: 480px;
+    max-width: 550px;
 }
 
 .settings-header {
@@ -156,7 +164,7 @@ body {
 
 .settings-section {
     margin-bottom: 1.5rem;
-    padding-bottom: 1.5rem;
+    padding-bottom: 1rem;
     border-bottom: 1px solid var(--border);
 }
 
@@ -243,12 +251,6 @@ body {
 }
 
 /* Settings Footer */
-.settings-footer {
-    margin-top: 1rem;
-    padding-top: 1rem;
-    border-top: 1px solid var(--border);
-}
-
 .btn-danger {
     padding: 0.5rem 1rem;
     background: transparent;
@@ -825,6 +827,40 @@ body {
 .cache-status {
     font-size: 0.85rem;
     color: var(--text-secondary);
+}
+
+/* Keyboard Shortcuts List */
+.shortcuts-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.shortcut {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+kbd {
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    font-family: inherit;
+    font-size: 0.85rem;
+    min-width: 28px;
+    text-align: center;
+}
+
+.shortcuts-list {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: repeat(3, auto);
+    grid-auto-flow: column;
 }
 
 /* Track Meta (Artist + Album) */

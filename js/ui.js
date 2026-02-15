@@ -7,6 +7,7 @@
  * - Economy mode (skip art loading)
  * - Art caching integration
  * - Settings modal and cache management
+ * - Keyboard shortcuts
  */
 
 import { getArtUrl, getArtCacheStats, clearAllCaches, clearAuthToken, fetchMetadata, uploadMetadata } from './api.js';
@@ -550,6 +551,57 @@ export function setupSettings() {
 }
 
 /**
+ * Setup global keyboard shortcuts for playback
+ */
+export function setupKeyboardShortcuts() {
+    document.addEventListener('keydown', (e) => {
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+        if (!player) return;
+
+        switch (e.code) {
+            case 'Space':
+                e.preventDefault();
+                if (state.currentTrack) player.togglePlayPause();
+                break;
+            case 'ArrowLeft':
+                e.preventDefault();
+                const prevTrack = state.getPreviousTrack();
+                if (prevTrack) state.setCurrentTrack(prevTrack.id);
+                break;
+            case 'ArrowRight':
+                e.preventDefault();
+                const nextTrack = state.getNextTrack();
+                if (nextTrack) state.setCurrentTrack(nextTrack.id);
+                break;
+            case 'ArrowUp':
+                e.preventDefault();
+                const volUp = Math.min(100, (player.audio.volume * 100) + 10);
+                player.setVolume(volUp / 100);
+                document.getElementById('volume-slider').value = volUp;
+                break;
+            case 'ArrowDown':
+                e.preventDefault();
+                const volDown = Math.max(0, (player.audio.volume * 100) - 10);
+                player.setVolume(volDown / 100);
+                document.getElementById('volume-slider').value = volDown;
+                break;
+            case 'KeyM':
+                e.preventDefault();
+                if (player.audio.volume > 0) {
+                    player.previousVolume = player.audio.volume;
+                    player.setVolume(0);
+                    document.getElementById('volume-slider').value = 0;
+                } else {
+                    const restore = player.previousVolume || 1;
+                    player.setVolume(restore);
+                    document.getElementById('volume-slider').value = restore * 100;
+                }
+                break;
+        }
+    });
+}
+
+/**
  * Format duration (seconds to MM:SS)
  */
 function formatDuration(seconds) {
@@ -569,6 +621,9 @@ function escapeHtml(text) {
     return div.innerHTML;
 }
 
+/**
+ * Escape attribute values
+ */
 function escapeAttr(text) {
     if (!text) return '';
     return text
